@@ -1,0 +1,43 @@
+package com.exercise;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * @author LX
+ * @Time 2021/7/15
+ **/
+public class SqlSessionutlis3 {
+    private static SqlSessionFactory sqlSessionFactory;
+    static {
+        String config="主配置文件";
+        InputStream inputStream=null;
+        try {
+            inputStream= Resources.getResourceAsStream(config);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        sqlSessionFactory=new SqlSessionFactoryBuilder().build(inputStream);
+    }
+    private static ThreadLocal<SqlSession> threadLocal =new ThreadLocal<SqlSession>();
+    public  static SqlSession getSession(){
+        SqlSession session=threadLocal.get();
+        if (session==null){
+            session=sqlSessionFactory.openSession();
+            threadLocal.set(session);
+        }
+        return session;
+    }
+    public static void closeSession(SqlSession session){
+        if (session !=null){
+            session.close();
+            threadLocal.remove();
+        }
+    }
+}
